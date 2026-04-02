@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET || '0x4AAAAAACzWlwGguatYGKhMxO0uDLTrEds';
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET || '0x4AAAAAACzXvTv6K5iEEUbcluotXyigoAQ';
 
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
