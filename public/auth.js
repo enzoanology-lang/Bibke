@@ -112,19 +112,13 @@ async function handleSignup(e) {
     setLoading(elements.signupBtn, true);
 
     try {
-        // Verify Turnstile
-        const isValid = await verifyTurnstileToken(turnstileToken);
-        if (!isValid) {
-            showError('Security verification failed. Please try again.');
-            setLoading(elements.signupBtn, false);
-            return;
-        }
+        
 
         // Call real register API
         const response = await fetch('/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password })
+            body: JSON.stringify({ name, email, password, turnstileToken })  // 👈 add token
         });
 
         const data = await response.json();
@@ -177,20 +171,14 @@ async function handleLogin(e) {
     setLoading(elements.loginBtn, true);
 
     try {
-        // Verify Turnstile
-        const isValid = await verifyTurnstileToken(turnstileToken);
-        if (!isValid) {
-            showError('Security verification failed. Please try again.');
-            setLoading(elements.loginBtn, false);
-            return;
-        }
+        
 
         // Call real login API
         const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, turnstileToken })  // 👈 add token here
+});
 
         const data = await response.json();
 
