@@ -16,7 +16,7 @@ export default {
       
       // Verify with Cloudflare
       const formData = new FormData();
-      formData.append('secret', '0x4AAAAAACzXvTv6K5iEEUbcluotXyigoAQ');
+      formData.append('secret', '0x4AAAAAACzixX9PxOaBAljxlyLp92XSRn0');
       formData.append('response', token);
       
       const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
