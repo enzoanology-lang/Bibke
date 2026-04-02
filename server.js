@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const MONGO_URI = process.env.MONGO_URI;
-const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET || '0x4AAAAAACzXvTv6K5iEEUbcluotXyigoAQ';
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET || '0x4AAAAAACzixX9PxOaBAljxlyLp92XSRn0';
 
 let db; // Global database reference
 
