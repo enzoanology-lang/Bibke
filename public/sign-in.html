@@ -101,41 +101,10 @@
     </div>
 
     <script src="auth.js"></script>
-    <script>
-        let turnstileVerified = false;
-
-        // Callback when Turnstile is successfully verified
-        window.onTurnstileSuccess = function(token) {
-            turnstileVerified = true;
-            const loginBtn = document.getElementById('login-btn');
-            if (loginBtn) {
-                loginBtn.disabled = false;
-            }
-            console.log('Turnstile verified successfully');
-        };
-
-        // Override handleLogin to include Turnstile verification
-        const originalHandleLogin = window.handleLogin;
-        if (originalHandleLogin) {
-            window.handleLogin = async function(e) {
-                e.preventDefault();
-                
-                if (!turnstileVerified) {
-                    showError('Please complete the verification check');
-                    return;
-                }
-                
-                // Get the Turnstile token
-                const turnstileToken = document.querySelector('[name="cf-turnstile-response"]')?.value;
-                if (!turnstileToken) {
-                    showError('Verification failed. Please try again.');
-                    return;
-                }
-                
-                // Call the original login function with the token
-                await originalHandleLogin(e, turnstileToken);
-            };
-        }
-    </script>
+<script>
+    window.onTurnstileSuccess = function() {
+        document.getElementById('login-btn').disabled = false;
+    };
+</script>
 </body>
 </html>
