@@ -103,7 +103,7 @@ async function handleSignup(e) {
     }
 
     // Get Turnstile token
-    const turnstileToken = document.querySelector('[name="cf-turnstile-response"]')?.value;
+    const turnstileToken = window._turnstileToken || document.querySelector('[name="cf-turnstile-response"]')?.value;
     if (!turnstileToken) {
         showError('Please complete the security verification');
         return;
@@ -168,7 +168,7 @@ async function handleLogin(e) {
     }
 
     // Get Turnstile token
-    const turnstileToken = document.querySelector('[name="cf-turnstile-response"]')?.value;
+    const turnstileToken = window._turnstileToken || document.querySelector('[name="cf-turnstile-response"]')?.value;
     if (!turnstileToken) {
         showError('Please complete the security verification');
         return;
