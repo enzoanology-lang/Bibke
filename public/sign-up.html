@@ -103,7 +103,10 @@
 
     <script src="auth.js"></script>
 <script>
-    window.onTurnstileSuccess = function() {
+    window._turnstileToken = null;
+
+    window.onTurnstileSuccess = function(token) {
+        window._turnstileToken = token;  // Save token immediately
         document.getElementById('sign-up-btn').disabled = false;
     };
 </script>
