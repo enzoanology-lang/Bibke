@@ -11,7 +11,8 @@ const PORT = process.env.PORT || 3000;
 
 const MONGO_URI = process.env.MONGO_URI;
 const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET;
-let db; // Global database reference
+
+let db;
 
 // ====================== MongoDB Connection ======================
 async function connectDB() {
@@ -21,10 +22,9 @@ async function connectDB() {
     }
 
     try {
-        const client = new MongoClient(MONGO_URI);   // No deprecated options needed
+        const client = new MongoClient(MONGO_URI);
         await client.connect();
-        db = client.db('bibleai');   // Change name if you want a different DB
-
+        db = client.db('bibleai');
         console.log('✅ Connected to MongoDB Atlas successfully');
         return db;
     } catch (err) {
@@ -34,19 +34,9 @@ async function connectDB() {
     }
 }
 
-// ====================== Middleware ======================
-app.use(cors());
-app.use(express.json());                    // Important for parsing POST body (register, verify, etc.)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// ====================== Turnstile Route ======================
-app.post('/api/verify-turnstile', async (req, res) => {
-    const { token } = req.body;
-    
-    if (!token) {
-        return res.status(400).json({ success: false, error: 'No token provided' });
-    }
-
+// ====================== Turnstile Helper ======================
+async function verifyTurnstile(token) {
+    if (!token) return false;
     try {
         const formData = new URLSearchParams();
         formData.append('secret', TURNSTILE_SECRET);
@@ -58,17 +48,29 @@ app.post('/api/verify-turnstile', async (req, res) => {
         });
 
         const outcome = await result.json();
-        res.json({ success: outcome.success });
-    } catch (error) {
-        console.error('Turnstile verification error:', error);
-        res.status(500).json({ success: false, error: 'Server error' });
+        console.log('Turnstile outcome:', outcome);
+        return outcome.success === true;
+    } catch (err) {
+        console.error('Turnstile helper error:', err);
+        return false;
     }
-});
+}
+
+// ====================== Middleware ======================
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ====================== REGISTER ROUTE ======================
 app.post('/api/register', async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, turnstileToken } = req.body;
+
+        // Verify Turnstile first
+        const turnstileOk = await verifyTurnstile(turnstileToken);
+        if (!turnstileOk) {
+            return res.status(400).json({ message: 'Security verification failed. Please try again.' });
+        }
 
         if (!name || !email || !password) {
             return res.status(400).json({ message: 'Name, email, and password are required' });
@@ -86,7 +88,7 @@ app.post('/api/register', async (req, res) => {
             return res.status(400).json({ message: 'Email already registered' });
         }
 
-        // Generate 6-digit code
+        // Generate 6-digit verification code
         const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
         // Hash password
@@ -161,7 +163,7 @@ app.post('/api/verify-email', async (req, res) => {
             }
         );
 
-        // Optional: Send welcome email
+        // Send welcome email
         await sendWelcomeEmail(email, user.name, true);
 
         res.status(200).json({
@@ -177,7 +179,13 @@ app.post('/api/verify-email', async (req, res) => {
 // ====================== LOGIN ROUTE ======================
 app.post('/api/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, turnstileToken } = req.body;
+
+        // Verify Turnstile first
+        const turnstileOk = await verifyTurnstile(turnstileToken);
+        if (!turnstileOk) {
+            return res.status(400).json({ message: 'Security verification failed. Please try again.' });
+        }
 
         if (!email || !password) {
             return res.status(400).json({ message: 'Email and password are required' });
@@ -226,7 +234,7 @@ app.get('*', (req, res) => {
 
 // ====================== Start Server ======================
 async function startServer() {
-    await connectDB();   // Wait for MongoDB before starting server
+    await connectDB();
 
     app.listen(PORT, () => {
         console.log(`🚀 Server running on port ${PORT}`);
@@ -236,7 +244,7 @@ async function startServer() {
 
 startServer();
 
-// Optional: Graceful shutdown
+// Graceful shutdown
 process.on('SIGINT', async () => {
     console.log('Shutting down gracefully...');
     process.exit(0);
