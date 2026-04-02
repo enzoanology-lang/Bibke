@@ -1,0 +1,12 @@
+# render.yaml
+services:
+  - type: web
+    name: bibleai
+    runtime: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: TURNSTILE_SECRET
+        sync: false
+      - key: NODE_VERSION
+        value: 18.0.0
