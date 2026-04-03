@@ -1,57 +1,30 @@
-// email.js
-const nodemailer = require('nodemailer');
-
-// Create transporter (configure for your email service)
-const transporter = nodemailer.createTransport({
-    service: 'gmail', // or 'outlook', 'yahoo', etc.
-    auth: {
-        user: process.env.EMAIL_USER, // Your email address
-        pass: process.env.EMAIL_PASS  // Your email password or app password
-    }
-});
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendVerificationEmail(email, name, code) {
-    try {
-        await transporter.sendMail({
-            from: `"Your App Name" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: 'Verify Your Email',
-            html: `
-                <h1>Hello ${name}!</h1>
-                <p>Thank you for registering. Please verify your email using this code:</p>
-                <h2 style="color: blue;">${code}</h2>
-                <p>This code will expire in 10 minutes.</p>
-                <p>If you didn't request this, please ignore this email.</p>
-            `
-        });
-        console.log(`Verification email sent to ${email}`);
-    } catch (error) {
-        console.error('Error sending verification email:', error);
-        throw error;
-    }
+    await resend.emails.send({
+        from: 'Bibleai <onboarding@resend.dev>',
+        to: email,
+        subject: 'Verify your Bibleai account',
+        html: `
+            <h2>Welcome to Bibleai, ${name}!</h2>
+            <p>Your verification code is:</p>
+            <h1 style="letter-spacing:8px;">${code}</h1>
+            <p>This code expires in 10 minutes.</p>
+        `
+    });
 }
 
-async function sendWelcomeEmail(email, name, isVerified) {
-    try {
-        await transporter.sendMail({
-            from: `"Your App Name" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: 'Welcome to BibleAI!',
-            html: `
-                <h1>Welcome ${name}!</h1>
-                <p>Your account has been successfully verified.</p>
-                <p>You can now log in and start using BibleAI.</p>
-                <p>Thank you for joining us!</p>
-            `
-        });
-        console.log(`Welcome email sent to ${email}`);
-    } catch (error) {
-        console.error('Error sending welcome email:', error);
-        // Don't throw for welcome email - it's not critical
-    }
+async function sendWelcomeEmail(email, name) {
+    await resend.emails.send({
+        from: 'Bibleai <onboarding@resend.dev>',
+        to: email,
+        subject: 'Welcome to Bibleai!',
+        html: `
+            <h2>Welcome, ${name}!</h2>
+            <p>Your account has been verified. Enjoy your spiritual journey with Bibleai.</p>
+        `
+    });
 }
 
-module.exports = {
-    sendVerificationEmail,
-    sendWelcomeEmail
-};
+module.exports = { sendVerificationEmail, sendWelcomeEmail };
